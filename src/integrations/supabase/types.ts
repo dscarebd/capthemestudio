@@ -14,7 +14,202 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      agency_faqs: {
+        Row: {
+          answer: string
+          created_at: string
+          display_order: number
+          id: string
+          question: string
+        }
+        Insert: {
+          answer: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          question: string
+        }
+        Update: {
+          answer?: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          question?: string
+        }
+        Relationships: []
+      }
+      agency_reviews: {
+        Row: {
+          comment: string
+          created_at: string
+          display_order: number
+          id: string
+          rating: number
+          reviewer_name: string
+          reviewer_role: string | null
+        }
+        Insert: {
+          comment: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          rating?: number
+          reviewer_name: string
+          reviewer_role?: string | null
+        }
+        Update: {
+          comment?: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          rating?: number
+          reviewer_name?: string
+          reviewer_role?: string | null
+        }
+        Relationships: []
+      }
+      contact_messages: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          message: string
+          name: string
+          subject: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          message: string
+          name: string
+          subject?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          message?: string
+          name?: string
+          subject?: string | null
+        }
+        Relationships: []
+      }
+      team_faqs: {
+        Row: {
+          answer: string
+          created_at: string
+          display_order: number
+          id: string
+          member_id: string
+          question: string
+        }
+        Insert: {
+          answer: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          member_id: string
+          question: string
+        }
+        Update: {
+          answer?: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          member_id?: string
+          question?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_faqs_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "team_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      team_members: {
+        Row: {
+          bio: string | null
+          created_at: string
+          display_order: number
+          email: string | null
+          id: string
+          name: string
+          phone: string | null
+          photo_url: string | null
+          role: string
+          skills: string[] | null
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          bio?: string | null
+          created_at?: string
+          display_order?: number
+          email?: string | null
+          id?: string
+          name: string
+          phone?: string | null
+          photo_url?: string | null
+          role: string
+          skills?: string[] | null
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          bio?: string | null
+          created_at?: string
+          display_order?: number
+          email?: string | null
+          id?: string
+          name?: string
+          phone?: string | null
+          photo_url?: string | null
+          role?: string
+          skills?: string[] | null
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      team_reviews: {
+        Row: {
+          comment: string
+          created_at: string
+          id: string
+          member_id: string
+          rating: number
+          reviewer_name: string
+        }
+        Insert: {
+          comment: string
+          created_at?: string
+          id?: string
+          member_id: string
+          rating?: number
+          reviewer_name: string
+        }
+        Update: {
+          comment?: string
+          created_at?: string
+          id?: string
+          member_id?: string
+          rating?: number
+          reviewer_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_reviews_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "team_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
