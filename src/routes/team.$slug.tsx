@@ -266,54 +266,24 @@ function MemberPage() {
                   {member.name}
                 </h1>
 
-                {/* Meta row */}
-                <div className="mt-5 flex flex-wrap gap-4 text-sm text-muted-foreground">
+                {/* Meta row — address, email, phone in one line */}
+                <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted-foreground">
                   <span className="inline-flex items-center gap-1.5">
                     <MapPin className="h-4 w-4 text-primary" /> {displayLocation}
                   </span>
-                  <span className="inline-flex items-center gap-1.5">
-                    <Calendar className="h-4 w-4 text-primary" /> {profile.joined}
-                  </span>
-                  <span className="inline-flex items-center gap-1.5">
-                    <Film className="h-4 w-4 text-primary" /> {profile.highlights[0].value} {profile.highlights[0].label.toLowerCase()}
-                  </span>
+                  {member.email && (
+                    <a href={`mailto:${member.email}`} className="inline-flex items-center gap-1.5 hover:text-primary">
+                      <Mail className="h-4 w-4 text-primary" /> {member.email}
+                    </a>
+                  )}
+                  {member.phone && (
+                    <a href={`tel:${member.phone}`} className="inline-flex items-center gap-1.5 hover:text-primary">
+                      <Phone className="h-4 w-4 text-primary" /> {member.phone}
+                    </a>
+                  )}
                 </div>
 
                 <p className="mt-6 text-lg text-foreground/85 leading-relaxed">{member.bio}</p>
-
-                {/* Public contact info */}
-                {(member.email || member.phone) && (
-                  <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                    {member.email && (
-                      <a
-                        href={`mailto:${member.email}`}
-                        className="flex items-center gap-3 rounded-xl border border-border bg-card/60 px-4 py-3 transition hover:border-primary/60 hover:shadow-gold"
-                      >
-                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                          <Mail className="h-4 w-4" />
-                        </div>
-                        <div className="min-w-0">
-                          <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Email</div>
-                          <div className="truncate text-sm font-medium text-foreground">{member.email}</div>
-                        </div>
-                      </a>
-                    )}
-                    {member.phone && (
-                      <a
-                        href={`tel:${member.phone}`}
-                        className="flex items-center gap-3 rounded-xl border border-border bg-card/60 px-4 py-3 transition hover:border-primary/60 hover:shadow-gold"
-                      >
-                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                          <Phone className="h-4 w-4" />
-                        </div>
-                        <div className="min-w-0">
-                          <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Phone</div>
-                          <div className="truncate text-sm font-medium text-foreground">{member.phone}</div>
-                        </div>
-                      </a>
-                    )}
-                  </div>
-                )}
 
                 {/* CTAs */}
                 <div className="mt-8 flex flex-wrap gap-3">
