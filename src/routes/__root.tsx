@@ -40,6 +40,12 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@capthemestudio" },
+      { property: "og:title", content: "CapThemeStudio — Cinematic CapCut Templates & Editing" },
+      { name: "twitter:title", content: "CapThemeStudio — Cinematic CapCut Templates & Editing" },
+      { property: "og:description", content: "Premium cinematic CapCut templates and custom video editing for creators, brands and storytellers worldwide." },
+      { name: "twitter:description", content: "Premium cinematic CapCut templates and custom video editing for creators, brands and storytellers worldwide." },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/f4aa750f-266a-4e83-8fe6-7f6301319129" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/f4aa750f-266a-4e83-8fe6-7f6301319129" },
     ],
     links: [
       { rel: "icon", type: "image/png", href: "/favicon.png" },
