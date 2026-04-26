@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useLocation } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { PageShell } from "@/components/site/PageShell";
@@ -23,6 +23,9 @@ export const Route = createFileRoute("/team")({
 });
 
 function TeamPage() {
+  const { pathname } = useLocation();
+  const isMemberProfile = pathname !== "/team";
+
   const { data: team = [] } = useQuery({
     queryKey: ["team-all"],
     queryFn: async () => {
@@ -44,6 +47,10 @@ function TeamPage() {
       return data ?? [];
     },
   });
+
+  if (isMemberProfile) {
+    return <Outlet />;
+  }
 
   return (
     <PageShell>
