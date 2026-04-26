@@ -203,6 +203,7 @@ function MemberPage() {
     : null;
   const firstName = member.name.split(" ")[0];
   const profile = ROLE_PROFILES[member.slug] ?? DEFAULT_PROFILE;
+  const displayLocation = (member as { location?: string | null }).location || profile.location;
 
   return (
     <PageShell>
@@ -268,7 +269,7 @@ function MemberPage() {
                 {/* Meta row */}
                 <div className="mt-5 flex flex-wrap gap-4 text-sm text-muted-foreground">
                   <span className="inline-flex items-center gap-1.5">
-                    <MapPin className="h-4 w-4 text-primary" /> {profile.location}
+                    <MapPin className="h-4 w-4 text-primary" /> {displayLocation}
                   </span>
                   <span className="inline-flex items-center gap-1.5">
                     <Calendar className="h-4 w-4 text-primary" /> {profile.joined}

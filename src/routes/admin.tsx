@@ -25,6 +25,7 @@ type Member = {
   email: string | null;
   phone: string | null;
   photo_url: string | null;
+  location: string | null;
   skills: string[] | null;
   display_order: number;
 };
@@ -61,6 +62,7 @@ function Admin() {
       email: "",
       phone: "",
       photo_url: "",
+      location: "",
       skills: [],
       display_order: members.length + 1,
     });
@@ -106,6 +108,7 @@ function Admin() {
       email: editing.email,
       phone: editing.phone,
       photo_url: editing.photo_url,
+      location: editing.location,
       skills: editing.skills,
       display_order: editing.display_order,
     };
@@ -239,6 +242,9 @@ function Admin() {
                 <Input label="Role" value={editing.role} onChange={(v) => setEditing({ ...editing, role: v })} />
                 <Input label="Email" value={editing.email ?? ""} onChange={(v) => setEditing({ ...editing, email: v })} />
                 <Input label="Phone" value={editing.phone ?? ""} onChange={(v) => setEditing({ ...editing, phone: v })} />
+                <div className="md:col-span-2">
+                  <Input label="Address / Location" value={editing.location ?? ""} onChange={(v) => setEditing({ ...editing, location: v })} />
+                </div>
                 <Input label="Photo URL (optional)" value={editing.photo_url ?? ""} onChange={(v) => setEditing({ ...editing, photo_url: v })} />
                 <Input label="Display order" value={String(editing.display_order)} onChange={(v) => setEditing({ ...editing, display_order: Number(v) || 0 })} />
                 <div className="md:col-span-2">
