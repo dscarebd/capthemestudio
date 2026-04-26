@@ -1,9 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { PageShell } from "@/components/site/PageShell";
-import { Pencil, Save, X, Plus, Trash2, Loader2 } from "lucide-react";
+import { resolveTeamPhoto } from "@/lib/team-photos";
+import { Pencil, Save, X, Plus, Trash2, Loader2, Upload, ImageIcon } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   component: Admin,
@@ -46,6 +47,8 @@ function Admin() {
   const [creating, setCreating] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const startNew = () => {
     setCreating(true);
@@ -61,6 +64,33 @@ function Admin() {
       skills: [],
       display_order: members.length + 1,
     });
+  };
+
+  const uploadPhoto = async (file: File) => {
+    if (!editing) return;
+    setError("");
+    if (file.size > 5 * 1024 * 1024) {
+      setError("Image must be smaller than 5MB.");
+      return;
+    }
+    if (!file.type.startsWith("image/")) {
+      setError("Please choose an image file.");
+      return;
+    }
+    setUploading(true);
+    const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+    const path = `members/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const { error: upErr } = await supabase.storage
+      .from("team-photos")
+      .upload(path, file, { cacheControl: "3600", upsert: false, contentType: file.type });
+    if (upErr) {
+      setUploading(false);
+      setError(upErr.message);
+      return;
+    }
+    const { data } = supabase.storage.from("team-photos").getPublicUrl(path);
+    setEditing({ ...editing, photo_url: data.publicUrl });
+    setUploading(false);
   };
 
   const save = async () => {
@@ -123,11 +153,18 @@ function Admin() {
             {members.map((m) => (
               <div key={m.id} className="rounded-2xl border border-border/50 bg-card/40 p-5">
                 <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <div className="font-display text-xl">{m.name}</div>
-                    <div className="text-xs text-primary uppercase tracking-widest">{m.role}</div>
-                    <div className="mt-1 text-xs text-muted-foreground">/team/{m.slug}</div>
-                    {m.email && <div className="mt-1 text-xs text-muted-foreground">{m.email} · {m.phone}</div>}
+                  <div className="flex items-start gap-4">
+                    <img
+                      src={resolveTeamPhoto(m.photo_url)}
+                      alt={m.name}
+                      className="h-16 w-16 rounded-lg object-cover border border-border/50"
+                    />
+                    <div>
+                      <div className="font-display text-xl">{m.name}</div>
+                      <div className="text-xs text-primary uppercase tracking-widest">{m.role}</div>
+                      <div className="mt-1 text-xs text-muted-foreground">/team/{m.slug}</div>
+                      {m.email && <div className="mt-1 text-xs text-muted-foreground">{m.email}{m.phone ? ` · ${m.phone}` : ""}</div>}
+                    </div>
                   </div>
                   <div className="flex gap-2">
                     <button onClick={() => { setEditing(m); setCreating(false); }} className="rounded-md border border-border/60 p-2 hover:border-primary"><Pencil className="h-4 w-4" /></button>
@@ -146,12 +183,63 @@ function Admin() {
                 <h2 className="font-display text-2xl">{creating ? "Add" : "Edit"} member</h2>
                 <button onClick={() => { setEditing(null); setCreating(false); }} className="rounded-md p-2 hover:bg-muted"><X className="h-4 w-4" /></button>
               </div>
+
+              {/* Photo uploader */}
+              <div className="mt-5 flex items-center gap-4 rounded-xl border border-border/60 bg-background/50 p-4">
+                {editing.photo_url ? (
+                  <img
+                    src={resolveTeamPhoto(editing.photo_url)}
+                    alt="Preview"
+                    className="h-20 w-20 rounded-lg object-cover border border-border/50"
+                  />
+                ) : (
+                  <div className="flex h-20 w-20 items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 text-muted-foreground">
+                    <ImageIcon className="h-6 w-6" />
+                  </div>
+                )}
+                <div className="flex-1">
+                  <div className="text-sm font-medium">Profile photo</div>
+                  <div className="text-xs text-muted-foreground">PNG / JPG / WEBP — up to 5MB</div>
+                  <div className="mt-2 flex gap-2">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const f = e.target.files?.[0];
+                        if (f) uploadPhoto(f);
+                        e.target.value = "";
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploading}
+                      className="inline-flex items-center gap-2 rounded-md border border-border/60 px-3 py-1.5 text-xs hover:border-primary disabled:opacity-50"
+                    >
+                      {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+                      {uploading ? "Uploading..." : "Upload photo"}
+                    </button>
+                    {editing.photo_url && (
+                      <button
+                        type="button"
+                        onClick={() => setEditing({ ...editing, photo_url: "" })}
+                        className="inline-flex items-center gap-1 rounded-md border border-border/60 px-3 py-1.5 text-xs text-destructive hover:border-destructive"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" /> Remove
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
               <div className="mt-5 grid gap-4 md:grid-cols-2">
                 <Input label="Name" value={editing.name} onChange={(v) => setEditing({ ...editing, name: v })} />
                 <Input label="Role" value={editing.role} onChange={(v) => setEditing({ ...editing, role: v })} />
                 <Input label="Email" value={editing.email ?? ""} onChange={(v) => setEditing({ ...editing, email: v })} />
                 <Input label="Phone" value={editing.phone ?? ""} onChange={(v) => setEditing({ ...editing, phone: v })} />
-                <Input label="Photo URL" value={editing.photo_url ?? ""} onChange={(v) => setEditing({ ...editing, photo_url: v })} />
+                <Input label="Photo URL (optional)" value={editing.photo_url ?? ""} onChange={(v) => setEditing({ ...editing, photo_url: v })} />
                 <Input label="Display order" value={String(editing.display_order)} onChange={(v) => setEditing({ ...editing, display_order: Number(v) || 0 })} />
                 <div className="md:col-span-2">
                   <label className="text-xs uppercase tracking-widest text-muted-foreground">Skills (comma separated)</label>
