@@ -329,7 +329,7 @@ function MemberPage() {
       {/* HIGHLIGHTS STRIP */}
       <section className="mx-auto max-w-6xl px-6 py-12">
         <div className="grid gap-4 md:grid-cols-3">
-          {HIGHLIGHTS.map((h, i) => (
+          {profile.highlights.map((h, i) => (
             <Reveal key={h.label} delay={i * 0.08}>
               <div className="flex items-center gap-4 rounded-2xl border border-border bg-card p-6 transition hover:border-primary/40 hover:shadow-gold">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary-glow text-primary-foreground">
