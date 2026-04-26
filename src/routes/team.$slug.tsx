@@ -386,7 +386,7 @@ function MemberPage() {
                 A path through <span className="text-gradient-gold">cinema</span>
               </h2>
               <div className="mt-6 space-y-5 border-l-2 border-border pl-6">
-                {JOURNEY.map((j) => (
+                {profile.journey.map((j) => (
                   <div key={j.year} className="relative">
                     <div className="absolute -left-[33px] top-1.5 h-3 w-3 rounded-full border-2 border-primary bg-background" />
                     <div className="text-xs uppercase tracking-widest text-primary">{j.year} • {j.org}</div>
