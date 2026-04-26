@@ -85,7 +85,7 @@ function MemberPage() {
 
               {member.skills && member.skills.length > 0 && (
                 <div className="mt-6 flex flex-wrap gap-2">
-                  {member.skills.map((s) => (
+                  {member.skills.map((s: string) => (
                     <span key={s} className="rounded-full border border-border/60 bg-card/40 px-3 py-1 text-xs uppercase tracking-widest text-foreground/80">
                       {s}
                     </span>
