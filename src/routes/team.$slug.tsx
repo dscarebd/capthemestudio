@@ -74,17 +74,112 @@ export const Route = createFileRoute("/team/$slug")({
   },
 });
 
-const HIGHLIGHTS = [
-  { icon: Film, label: "Projects shipped", value: "120+" },
-  { icon: Award, label: "Industry awards", value: "08" },
-  { icon: CheckCircle2, label: "Client retention", value: "96%" },
-];
+type RoleProfile = {
+  highlights: { icon: typeof Film; label: string; value: string }[];
+  journey: { year: string; title: string; org: string; desc: string }[];
+  practices: string[];
+  location: string;
+  joined: string;
+};
 
-const JOURNEY = [
-  { year: "2024", title: "Senior Creative Lead", org: "CapThemeStudio", desc: "Leading flagship cinematic CapCut packs and brand campaigns." },
-  { year: "2022", title: "Joined CapThemeStudio", org: "CapThemeStudio", desc: "Brought motion-first storytelling into our core editing workflow." },
-  { year: "2019", title: "Independent Editor", org: "Freelance", desc: "Edited 200+ short-form pieces for global creators and DTC brands." },
-];
+const ROLE_PROFILES: Record<string, RoleProfile> = {
+  "aiden-cole": {
+    highlights: [
+      { icon: Film, label: "Films directed", value: "240+" },
+      { icon: Award, label: "Festival awards", value: "12" },
+      { icon: CheckCircle2, label: "Brand partners", value: "60+" },
+    ],
+    journey: [
+      { year: "2024", title: "Creative Director", org: "CapThemeStudio", desc: "Sets the visual language across every cinematic CapCut release." },
+      { year: "2021", title: "Co-founded CapThemeStudio", org: "CapThemeStudio", desc: "Launched the studio to bring film-grade craft to short-form video." },
+      { year: "2017", title: "Commercial Director", org: "Independent", desc: "Directed campaigns for global lifestyle and beauty brands." },
+    ],
+    practices: [
+      "Cinematic direction & storyboarding",
+      "Color science & LUT design",
+      "Brand-led creative strategy",
+    ],
+    location: "Los Angeles, USA",
+    joined: "Founded 2021",
+  },
+  "maya-reyes": {
+    highlights: [
+      { icon: Film, label: "Templates designed", value: "180+" },
+      { icon: Award, label: "Featured by CapCut", value: "06" },
+      { icon: CheckCircle2, label: "5★ ratings", value: "98%" },
+    ],
+    journey: [
+      { year: "2024", title: "Lead Template Designer", org: "CapThemeStudio", desc: "Owns the studio's flagship CapCut template library end-to-end." },
+      { year: "2022", title: "Senior Motion Designer", org: "CapThemeStudio", desc: "Built our signature kinetic typography system." },
+      { year: "2018", title: "Motion Designer", org: "Boutique studio", desc: "Designed motion identities for tech and music brands." },
+    ],
+    practices: [
+      "Kinetic typography systems",
+      "Trend-ready transitions & FX",
+      "Modular template architecture",
+    ],
+    location: "Barcelona, Spain",
+    joined: "Joined 2022",
+  },
+  "jonas-kim": {
+    highlights: [
+      { icon: Film, label: "Edits delivered", value: "500+" },
+      { icon: Award, label: "Viral videos", value: "40+" },
+      { icon: CheckCircle2, label: "On-time rate", value: "99%" },
+    ],
+    journey: [
+      { year: "2024", title: "Senior Video Editor", org: "CapThemeStudio", desc: "Edits long-form cinematic stories and brand documentaries." },
+      { year: "2021", title: "Joined CapThemeStudio", org: "CapThemeStudio", desc: "Brought broadcast-grade pacing into our short-form workflow." },
+      { year: "2016", title: "Post-production Editor", org: "TV network", desc: "Edited weekly broadcast features and music documentaries." },
+    ],
+    practices: [
+      "Beat-mapped narrative pacing",
+      "Multi-cam editing & sync",
+      "Sound design & mixing",
+    ],
+    location: "Seoul, South Korea",
+    joined: "Joined 2021",
+  },
+  "sofia-lang": {
+    highlights: [
+      { icon: Film, label: "Clients onboarded", value: "300+" },
+      { icon: Award, label: "Net Promoter Score", value: "72" },
+      { icon: CheckCircle2, label: "Retention rate", value: "94%" },
+    ],
+    journey: [
+      { year: "2024", title: "Client Success Manager", org: "CapThemeStudio", desc: "Bridges creative teams and clients across every cinematic project." },
+      { year: "2022", title: "Joined CapThemeStudio", org: "CapThemeStudio", desc: "Built the studio's onboarding and creative briefing system." },
+      { year: "2018", title: "Account Director", org: "Creative agency", desc: "Managed multi-million dollar accounts for global brands." },
+    ],
+    practices: [
+      "Creative briefing & scoping",
+      "Project orchestration",
+      "Long-term partnerships",
+    ],
+    location: "London, UK",
+    joined: "Joined 2022",
+  },
+};
+
+const DEFAULT_PROFILE: RoleProfile = {
+  highlights: [
+    { icon: Film, label: "Projects shipped", value: "120+" },
+    { icon: Award, label: "Industry awards", value: "08" },
+    { icon: CheckCircle2, label: "Client retention", value: "96%" },
+  ],
+  journey: [
+    { year: "2024", title: "Senior Creative Lead", org: "CapThemeStudio", desc: "Leading flagship cinematic CapCut packs and brand campaigns." },
+    { year: "2022", title: "Joined CapThemeStudio", org: "CapThemeStudio", desc: "Brought motion-first storytelling into our core editing workflow." },
+    { year: "2019", title: "Independent Editor", org: "Freelance", desc: "Edited 200+ short-form pieces for global creators and DTC brands." },
+  ],
+  practices: [
+    "Cinematic color grading & LUT design",
+    "Beat-mapped motion editing",
+    "Brand storytelling for short-form",
+  ],
+  location: "Worldwide • Remote",
+  joined: "Joined 2022",
+};
 
 function MemberPage() {
   const { member, others } = Route.useLoaderData();
@@ -107,6 +202,7 @@ function MemberPage() {
     ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
     : null;
   const firstName = member.name.split(" ")[0];
+  const profile = ROLE_PROFILES[member.slug] ?? DEFAULT_PROFILE;
 
   return (
     <PageShell>
@@ -172,13 +268,13 @@ function MemberPage() {
                 {/* Meta row */}
                 <div className="mt-5 flex flex-wrap gap-4 text-sm text-muted-foreground">
                   <span className="inline-flex items-center gap-1.5">
-                    <MapPin className="h-4 w-4 text-primary" /> Worldwide • Remote
+                    <MapPin className="h-4 w-4 text-primary" /> {profile.location}
                   </span>
                   <span className="inline-flex items-center gap-1.5">
-                    <Calendar className="h-4 w-4 text-primary" /> Joined 2022
+                    <Calendar className="h-4 w-4 text-primary" /> {profile.joined}
                   </span>
                   <span className="inline-flex items-center gap-1.5">
-                    <Film className="h-4 w-4 text-primary" /> 120+ projects
+                    <Film className="h-4 w-4 text-primary" /> {profile.highlights[0].value} {profile.highlights[0].label.toLowerCase()}
                   </span>
                 </div>
 
@@ -233,7 +329,7 @@ function MemberPage() {
       {/* HIGHLIGHTS STRIP */}
       <section className="mx-auto max-w-6xl px-6 py-12">
         <div className="grid gap-4 md:grid-cols-3">
-          {HIGHLIGHTS.map((h, i) => (
+          {profile.highlights.map((h, i) => (
             <Reveal key={h.label} delay={i * 0.08}>
               <div className="flex items-center gap-4 rounded-2xl border border-border bg-card p-6 transition hover:border-primary/40 hover:shadow-gold">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary-glow text-primary-foreground">
@@ -271,11 +367,7 @@ function MemberPage() {
                   ))}
                 </div>
                 <ul className="mt-6 space-y-3 text-sm text-foreground/85">
-                  {[
-                    "Cinematic color grading & LUT design",
-                    "Beat-mapped motion editing",
-                    "Brand storytelling for short-form",
-                  ].map((p) => (
+                  {profile.practices.map((p) => (
                     <li key={p} className="flex items-start gap-3">
                       <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                       <span>{p}</span>
@@ -294,7 +386,7 @@ function MemberPage() {
                 A path through <span className="text-gradient-gold">cinema</span>
               </h2>
               <div className="mt-6 space-y-5 border-l-2 border-border pl-6">
-                {JOURNEY.map((j) => (
+                {profile.journey.map((j) => (
                   <div key={j.year} className="relative">
                     <div className="absolute -left-[33px] top-1.5 h-3 w-3 rounded-full border-2 border-primary bg-background" />
                     <div className="text-xs uppercase tracking-widest text-primary">{j.year} • {j.org}</div>
