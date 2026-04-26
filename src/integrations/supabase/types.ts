@@ -137,6 +137,7 @@ export type Database = {
           display_order: number
           email: string | null
           id: string
+          location: string | null
           name: string
           phone: string | null
           photo_url: string | null
@@ -151,6 +152,7 @@ export type Database = {
           display_order?: number
           email?: string | null
           id?: string
+          location?: string | null
           name: string
           phone?: string | null
           photo_url?: string | null
@@ -165,6 +167,7 @@ export type Database = {
           display_order?: number
           email?: string | null
           id?: string
+          location?: string | null
           name?: string
           phone?: string | null
           photo_url?: string | null
