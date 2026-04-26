@@ -367,11 +367,7 @@ function MemberPage() {
                   ))}
                 </div>
                 <ul className="mt-6 space-y-3 text-sm text-foreground/85">
-                  {[
-                    "Cinematic color grading & LUT design",
-                    "Beat-mapped motion editing",
-                    "Brand storytelling for short-form",
-                  ].map((p) => (
+                  {profile.practices.map((p) => (
                     <li key={p} className="flex items-start gap-3">
                       <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                       <span>{p}</span>
