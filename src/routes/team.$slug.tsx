@@ -202,6 +202,7 @@ function MemberPage() {
     ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
     : null;
   const firstName = member.name.split(" ")[0];
+  const profile = ROLE_PROFILES[member.slug] ?? DEFAULT_PROFILE;
 
   return (
     <PageShell>
