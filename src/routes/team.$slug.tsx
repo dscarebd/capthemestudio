@@ -281,6 +281,40 @@ function MemberPage() {
 
                 <p className="mt-6 text-lg text-foreground/85 leading-relaxed">{member.bio}</p>
 
+                {/* Public contact info */}
+                {(member.email || member.phone) && (
+                  <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                    {member.email && (
+                      <a
+                        href={`mailto:${member.email}`}
+                        className="flex items-center gap-3 rounded-xl border border-border bg-card/60 px-4 py-3 transition hover:border-primary/60 hover:shadow-gold"
+                      >
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                          <Mail className="h-4 w-4" />
+                        </div>
+                        <div className="min-w-0">
+                          <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Email</div>
+                          <div className="truncate text-sm font-medium text-foreground">{member.email}</div>
+                        </div>
+                      </a>
+                    )}
+                    {member.phone && (
+                      <a
+                        href={`tel:${member.phone}`}
+                        className="flex items-center gap-3 rounded-xl border border-border bg-card/60 px-4 py-3 transition hover:border-primary/60 hover:shadow-gold"
+                      >
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                          <Phone className="h-4 w-4" />
+                        </div>
+                        <div className="min-w-0">
+                          <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Phone</div>
+                          <div className="truncate text-sm font-medium text-foreground">{member.phone}</div>
+                        </div>
+                      </a>
+                    )}
+                  </div>
+                )}
+
                 {/* CTAs */}
                 <div className="mt-8 flex flex-wrap gap-3">
                   {member.email && (
