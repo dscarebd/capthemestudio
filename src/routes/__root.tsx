@@ -1,5 +1,6 @@
 import { Outlet, Link, createRootRouteWithContext, HeadContent, Scripts } from "@tanstack/react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useState } from "react";
 import appCss from "../styles.css?url";
 
 interface RouterContext {
@@ -67,7 +68,10 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
-  const { queryClient } = Route.useRouteContext();
+  const context = Route.useRouteContext();
+  const [queryClient] = useState(
+    () => context?.queryClient ?? new QueryClient({ defaultOptions: { queries: { staleTime: 30_000 } } })
+  );
   return (
     <QueryClientProvider client={queryClient}>
       <Outlet />
