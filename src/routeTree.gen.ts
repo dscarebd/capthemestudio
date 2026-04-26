@@ -9,38 +9,154 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TeamRouteImport } from './routes/team'
+import { Route as PortfolioRouteImport } from './routes/portfolio'
+import { Route as OurWorkRouteImport } from './routes/our-work'
+import { Route as ContactRouteImport } from './routes/contact'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as TeamSlugRouteImport } from './routes/team.$slug'
 
+const TeamRoute = TeamRouteImport.update({
+  id: '/team',
+  path: '/team',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PortfolioRoute = PortfolioRouteImport.update({
+  id: '/portfolio',
+  path: '/portfolio',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OurWorkRoute = OurWorkRouteImport.update({
+  id: '/our-work',
+  path: '/our-work',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TeamSlugRoute = TeamSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => TeamRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/contact': typeof ContactRoute
+  '/our-work': typeof OurWorkRoute
+  '/portfolio': typeof PortfolioRoute
+  '/team': typeof TeamRouteWithChildren
+  '/team/$slug': typeof TeamSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/contact': typeof ContactRoute
+  '/our-work': typeof OurWorkRoute
+  '/portfolio': typeof PortfolioRoute
+  '/team': typeof TeamRouteWithChildren
+  '/team/$slug': typeof TeamSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/contact': typeof ContactRoute
+  '/our-work': typeof OurWorkRoute
+  '/portfolio': typeof PortfolioRoute
+  '/team': typeof TeamRouteWithChildren
+  '/team/$slug': typeof TeamSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/contact'
+    | '/our-work'
+    | '/portfolio'
+    | '/team'
+    | '/team/$slug'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/admin'
+    | '/contact'
+    | '/our-work'
+    | '/portfolio'
+    | '/team'
+    | '/team/$slug'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/contact'
+    | '/our-work'
+    | '/portfolio'
+    | '/team'
+    | '/team/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRoute
+  ContactRoute: typeof ContactRoute
+  OurWorkRoute: typeof OurWorkRoute
+  PortfolioRoute: typeof PortfolioRoute
+  TeamRoute: typeof TeamRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/team': {
+      id: '/team'
+      path: '/team'
+      fullPath: '/team'
+      preLoaderRoute: typeof TeamRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/portfolio': {
+      id: '/portfolio'
+      path: '/portfolio'
+      fullPath: '/portfolio'
+      preLoaderRoute: typeof PortfolioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/our-work': {
+      id: '/our-work'
+      path: '/our-work'
+      fullPath: '/our-work'
+      preLoaderRoute: typeof OurWorkRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,12 +164,43 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/team/$slug': {
+      id: '/team/$slug'
+      path: '/$slug'
+      fullPath: '/team/$slug'
+      preLoaderRoute: typeof TeamSlugRouteImport
+      parentRoute: typeof TeamRoute
+    }
   }
 }
 
+interface TeamRouteChildren {
+  TeamSlugRoute: typeof TeamSlugRoute
+}
+
+const TeamRouteChildren: TeamRouteChildren = {
+  TeamSlugRoute: TeamSlugRoute,
+}
+
+const TeamRouteWithChildren = TeamRoute._addFileChildren(TeamRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRoute,
+  ContactRoute: ContactRoute,
+  OurWorkRoute: OurWorkRoute,
+  PortfolioRoute: PortfolioRoute,
+  TeamRoute: TeamRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
