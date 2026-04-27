@@ -1,46 +1,63 @@
-## Why `npm install` fails on your Mac
 
-When we converted the project from TanStack Start (SSR) to a static SPA, `package.json` was updated, but **`package-lock.json` still contains the old SSR packages**:
+## Why you get 403 Forbidden on `/team` refresh
 
-- `@tanstack/react-start@1.167.39`
-- `@tanstack/react-start-client`, `react-start-server`, `react-start-rsc`
-- `@tanstack/start-plugin-core@1.167.34`
-- `@lovable.dev/vite-tanstack-config@1.2.0`
+When you visit `https://capthemestudio.xyz/` and click "Team", React Router handles the navigation client-side — Apache is never asked for `/team`. But when you **refresh** `/team`, the browser asks Apache for a real folder/file at `/team`. Since:
 
-These older packages pin `@tanstack/router-plugin@1.167.22`, but our SPA setup needs `@tanstack/router-plugin@^1.167.27` (which itself needs `@tanstack/react-router@^1.168.24`). npm refuses to resolve these conflicting requirements.
+- There is no `team` folder in your `public_html`
+- Directory listing is disabled (correctly)
+- `.htaccess` SPA fallback is **not being applied**
 
-`bun install` (used inside Lovable) is more lenient about peer dependency mismatches, which is why it didn't surface there.
+…Apache returns **403 Forbidden** instead of serving `index.html`.
 
-## Fix
+This is **not a code bug** — your `public/.htaccess` is correctly written. The problem is on your hosting / upload side. One of these is true:
 
-1. **Delete the stale `package-lock.json`** — it's the source of truth for the conflict and is now out of sync with our SPA `package.json`.
-2. **Remove `bun.lockb`** for the same reason (so both package managers regenerate cleanly).
-3. **Regenerate a fresh lockfile** by running `bun install` once inside the project (Lovable's standard).
-4. (Optional) Verify `package.json` no longer references any `@tanstack/react-start*` or `@lovable.dev/vite-tanstack-config` — already confirmed clean.
+1. **`.htaccess` was not uploaded** to `public_html` (most common — hidden files are skipped by default in FTP and cPanel File Manager).
+2. **`mod_rewrite` is not enabled** on your Apache hosting.
+3. **`AllowOverride`** is set to `None` in the server config, so `.htaccess` is ignored.
 
-After that, on your local Mac you have two options:
+---
 
-**Option A (recommended): use bun locally too**
-```
-bun install
-bun run build
-```
+## What I'll change in code
 
-**Option B: keep using npm** — then locally run:
-```
-rm -rf node_modules package-lock.json
-npm install --legacy-peer-deps   # only needed first time, then plain npm install works
-npm run build
-```
+I'll make the `.htaccess` more robust and self-diagnosing so it works on more hosts:
 
-The `--legacy-peer-deps` flag is a safety net only required if a transitive package still has a strict peer range; with the lockfile regenerated, plain `npm install` should also succeed.
+### 1. Make `.htaccess` more compatible
+- Remove the `<FilesMatch "^\.">` block (some shared hosts misinterpret it and lock out `.htaccess` itself)
+- Add `DirectoryIndex index.html` explicitly (prevents 403 when Apache can't find a default file)
+- Add `Options +FollowSymLinks` (required by `mod_rewrite` on some hosts)
+- Use `RewriteRule ^ /index.html [L]` with leading slash (more reliable on subdirectory installs)
+- Keep `ErrorDocument 404 /index.html` as a final fallback (handles cases where `mod_rewrite` is disabled)
 
-## Files that will change
-- Delete: `package-lock.json`
-- Delete: `bun.lockb`
-- Regenerate: `bun.lockb` (auto, via `bun install`)
+### 2. Add an `index.html` fallback rule
+Even if `mod_rewrite` is fully disabled, `ErrorDocument 404 /index.html` will catch the 404 and serve the SPA shell. We'll make sure the response status stays correct.
 
-No source code changes — this is purely a dependency-cleanup task.
+### Files modified
+- `public/.htaccess` — hardened version
 
-## After deploy
-Re-run `bun run build`, then upload everything from `dist/` (including hidden `.htaccess`) to your `public_html/`. Your admin panel and routing will work exactly the same.
+---
+
+## What YOU need to do on your hosting (critical)
+
+After I update the file and you run `bun run build`, when you upload the contents of `dist/` to `public_html`:
+
+### ✅ Step 1 — Make sure `.htaccess` is actually uploaded
+- In **cPanel File Manager**: click **Settings** (top right) → check **"Show Hidden Files (dotfiles)"** → click Save. Then verify `.htaccess` exists in `public_html`.
+- In **FileZilla / FTP**: menu **Server → Force showing hidden files**.
+- The file MUST be at `public_html/.htaccess`, not inside a subfolder.
+
+### ✅ Step 2 — Confirm `mod_rewrite` is enabled
+- Most shared hosts (Hostinger, Namecheap, Bluehost, SiteGround, GoDaddy cPanel) have it on by default.
+- If unsure, create a test file `public_html/test.php` with `<?php phpinfo(); ?>`, visit it, and search for `mod_rewrite` in the loaded modules list. Delete it after.
+- If not enabled, contact your host's support — they enable it instantly.
+
+### ✅ Step 3 — Confirm `AllowOverride All` is set
+- This is a server-config setting only your host controls. On 99% of shared hosts, it's already `All` for `public_html`. If `.htaccess` is being ignored despite being uploaded, ask support: *"Please confirm AllowOverride is set to All for my public_html directory."*
+
+### ✅ Step 4 — Test
+After upload, visit `https://capthemestudio.xyz/team` directly in a new tab (or refresh). It should now load the React app instead of 403.
+
+---
+
+## After approval
+
+I will update `public/.htaccess` with the hardened version and you can rebuild + re-upload (making sure hidden files are shown).
