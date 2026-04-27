@@ -1,10 +1,88 @@
-import { Outlet, Link, createRootRouteWithContext, HeadContent, Scripts } from "@tanstack/react-router";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useState } from "react";
-import appCss from "../styles.css?url";
+import { useEffect } from "react";
+import {
+  Outlet,
+  Link,
+  createRootRouteWithContext,
+  useRouterState,
+} from "@tanstack/react-router";
+import type { QueryClient } from "@tanstack/react-query";
 
 interface RouterContext {
   queryClient: QueryClient;
+}
+
+export const Route = createRootRouteWithContext<RouterContext>()({
+  component: RootComponent,
+  notFoundComponent: NotFoundComponent,
+});
+
+function HeadManager() {
+  // Aggregate `head()` results from every matched route and apply them to <head>.
+  // Mirrors what HeadContent does on the server, but client-side only.
+  const matches = useRouterState({ select: (s) => s.matches });
+
+  useEffect(() => {
+    const merged: { meta: Record<string, string>; title?: string } = { meta: {} };
+
+    for (const m of matches) {
+      const head = (m as unknown as { meta?: { title?: string; meta?: Array<Record<string, string>> } }).meta
+        ?? (m as unknown as { headValue?: { title?: string; meta?: Array<Record<string, string>> } }).headValue;
+
+      const headFn = (m.routeId && (m as unknown as { staticData?: unknown }).staticData) as unknown;
+      void headFn;
+
+      const headObj = (m as unknown as { __routeContext?: unknown });
+      void headObj;
+
+      // The router stores resolved head() as `m.meta` (array of meta entries) in newer versions
+      // and as `m.head` in others. We read whichever is present.
+      const rawHead =
+        (m as unknown as { head?: { meta?: Array<Record<string, string>> } }).head ??
+        (head as { meta?: Array<Record<string, string>> } | undefined);
+
+      const metaList = Array.isArray((rawHead as { meta?: unknown })?.meta)
+        ? ((rawHead as { meta: Array<Record<string, string>> }).meta)
+        : Array.isArray((m as unknown as { meta?: Array<Record<string, string>> }).meta)
+          ? (m as unknown as { meta: Array<Record<string, string>> }).meta
+          : [];
+
+      for (const tag of metaList) {
+        if (!tag) continue;
+        if (tag.title) {
+          merged.title = tag.title;
+          continue;
+        }
+        const key = tag.name ? `name:${tag.name}` : tag.property ? `property:${tag.property}` : null;
+        if (key && tag.content !== undefined) merged.meta[key] = tag.content;
+      }
+    }
+
+    if (merged.title) document.title = merged.title;
+
+    for (const [key, content] of Object.entries(merged.meta)) {
+      const [kind, name] = key.split(":");
+      const selector = kind === "name" ? `meta[name="${name}"]` : `meta[property="${name}"]`;
+      let el = document.head.querySelector<HTMLMetaElement>(selector);
+      if (!el) {
+        el = document.createElement("meta");
+        if (kind === "name") el.setAttribute("name", name);
+        else el.setAttribute("property", name);
+        document.head.appendChild(el);
+      }
+      el.setAttribute("content", content);
+    }
+  }, [matches]);
+
+  return null;
+}
+
+function RootComponent() {
+  return (
+    <>
+      <HeadManager />
+      <Outlet />
+    </>
+  );
 }
 
 function NotFoundComponent() {
@@ -26,63 +104,5 @@ function NotFoundComponent() {
         </div>
       </div>
     </div>
-  );
-}
-
-export const Route = createRootRouteWithContext<RouterContext>()({
-  head: () => ({
-    meta: [
-      { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "CapThemeStudio — Cinematic CapCut Templates & Editing" },
-      { name: "description", content: "Premium cinematic CapCut templates and custom video editing for creators, brands and storytellers worldwide." },
-      { name: "author", content: "CapThemeStudio" },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@capthemestudio" },
-      { property: "og:title", content: "CapThemeStudio — Cinematic CapCut Templates & Editing" },
-      { name: "twitter:title", content: "CapThemeStudio — Cinematic CapCut Templates & Editing" },
-      { property: "og:description", content: "Premium cinematic CapCut templates and custom video editing for creators, brands and storytellers worldwide." },
-      { name: "twitter:description", content: "Premium cinematic CapCut templates and custom video editing for creators, brands and storytellers worldwide." },
-      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/f4aa750f-266a-4e83-8fe6-7f6301319129" },
-      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/f4aa750f-266a-4e83-8fe6-7f6301319129" },
-    ],
-    links: [
-      { rel: "icon", type: "image/png", href: "/favicon.png" },
-      { rel: "apple-touch-icon", href: "/favicon.png" },
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" },
-      { rel: "stylesheet", href: appCss },
-    ],
-  }),
-  shellComponent: RootShell,
-  component: RootComponent,
-  notFoundComponent: NotFoundComponent,
-});
-
-function RootShell({ children }: { children: React.ReactNode }) {
-  return (
-    <html lang="en">
-      <head>
-        <HeadContent />
-      </head>
-      <body>
-        {children}
-        <Scripts />
-      </body>
-    </html>
-  );
-}
-
-function RootComponent() {
-  const context = Route.useRouteContext();
-  const [queryClient] = useState(
-    () => context?.queryClient ?? new QueryClient({ defaultOptions: { queries: { staleTime: 30_000 } } })
-  );
-  return (
-    <QueryClientProvider client={queryClient}>
-      <Outlet />
-    </QueryClientProvider>
   );
 }
